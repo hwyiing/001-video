@@ -1,0 +1,89 @@
+<!-- this is custom attempt at putting videos -->
+<html>
+
+<head>
+    <link href="stylesheet.css" rel="stylesheet" type="text/css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@300;700&display=swap" rel="stylesheet">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../../libs/mindar/mindar-image-three.prod.js"></script>
+    <script src="./main.js" type="module"></script>
+    <style>
+        #my-ar-container {
+            height: 600px;
+            /* width: 400px;  */
+            /* position: relative; */
+            overflow: hidden;
+        }
+        
+        #loading {
+            display: flex;
+            background-color: #ffffff;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 2;
+        }
+        
+        #loading .inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        #loading.hidden {
+            display: none;
+        }
+        
+        #loading img {
+            align-self: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="welcome">
+        <h1> WELCOME </h1>
+        <h2> TO UN YANG KOR DAI'S <a> AUGMENTED REAITY </a>
+            <h2> MENU ! </h2>
+        </h2>
+    </div>
+    <div id="container">
+        <button class="button-gradient" role="button" id="startbutton"><span class="text"> Begin
+            my AR Dining Experinece! </span></button>
+    </div>
+
+
+    <div id="my-ar-container">
+        <div id="loading" class="hidden">
+            <div class="inner">
+                <img src="./chef.png" />
+            </div>
+        </div>
+        <!-- load videos and "hide " them -->
+        <video id="video-1" playsinline webkit-playsinline loop autoplay muted src="https://res.cloudinary.com/daqm1fsjr/video/upload/v1644498928/un-yang-kor-dai-videos/uykd-1-grilled-chicken.mp4" style="display: none; " crossorigin="anonymous "></video>
+
+        <video id="video-2" playsinline webkit-playsinline loop autoplay muted src="https://res.cloudinary.com/daqm1fsjr/video/upload/v1644499039/un-yang-kor-dai-videos/ukyd-2-red-curry.mp4" style="display: none; " crossorigin="anonymous "></video>
+
+        <video id="video-3" playsinline webkit-playsinline loop autoplay muted src="https://res.cloudinary.com/daqm1fsjr/video/upload/v1644499114/un-yang-kor-dai-videos/ukyd-3-crispy-pork.mp4" style="display: none; " crossorigin="anonymous "></video>
+
+        <video id="video-4" playsinline webkit-playsinline loop autoplay muted src="https://res.cloudinary.com/daqm1fsjr/video/upload/v1641141809/un-yang-kor-dai-videos/ukyd-4-leng-zaab.mp4" style="display: none; " crossorigin="anonymous "></video>
+
+        <video id="GS-stars" playsinline webkit-playsinline loop autoplay muted src="https://res.cloudinary.com/daqm1fsjr/video/upload/v1643187002/chroma_overlays_stars.mp4" style="display: none; " crossorigin="anonymous "></video>
+        <video id="GS-bestseller" playsinline webkit-playsinline loop autoplay muted src="https://res.cloudinary.com/daqm1fsjr/video/upload/v1643186967/chroma_overlays_bestseller.mp4" style="display: none; " crossorigin="anonymous "></video>
+        <video id="GS-recipe" playsinline webkit-playsinline loop autoplay muted src="https://res.cloudinary.com/daqm1fsjr/video/upload/v1643187137/chroma_overlays_recipe.mp4" style="display: none; " crossorigin="anonymous "></video>
+        <video id="GS-1" playsinline webkit-playsinline loop autoplay muted src="https://res.cloudinary.com/daqm1fsjr/video/upload/v1644500621/un-yang-kor-dai-GS/uykd-1-GS.mp4" style="display:none; " crossorigin="anonymous"></video>
+    </div>
+
+
+
+</body>
+
+</html>
