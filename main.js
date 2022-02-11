@@ -18,6 +18,88 @@ const THREE = window.MINDAR.IMAGE.THREE;
 //     return video; 
 // }
 
+
+document.addEventListener('DOMContentLoaded', () => {
+    let loadedTriggerVids, loadedChromaVids = null;
+
+    const init = async() => {
+        // pre-load videos by getting the DOM elements
+        loadedTriggerVids = await loadVideos(".trigger-vid");
+        loadedChromaVids = await loadVideos(".chroma-vid");
+
+        //should listen for clicks only after first page
+        var eventHandler = function(e) {
+            start();
+            // remove this handler
+            document.body.removeEventListener('click', eventHandler, false);
+            //console.log("Listened to event only once. Now deleting...");
+        }
+        document.body.addEventListener("click", eventHandler);
+    }
+
+    const start = async() => {
+        const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+            container: document.querySelector("#my-ar-container"),
+            imageTargetSrc: 'targets.mind',
+            uiLoading: "#loading",
+        });
+        const { renderer, scene, camera } = mindarThree;
+
+        const anchors = new Array();
+
+        // make this into helper function later
+        // depending on whether we assume no. of loaded vid same as overlay vid
+        // need to adjust the ohter helper functions as well
+        for (var i = 0; i < loadedTriggerVids.length; i++) {
+
+            const video = loadedTriggerVids[i];
+            const GSvideo = loadedChromaVids[i];
+            const plane = createVideoPlane(video, 1, 9 / 16);
+            const GSplane = createGSplane(GSvideo, 1, 3 / 4);
+
+            anchors.push(mindarThree.addAnchor(i));
+            const anchor = anchors[i];
+
+            anchor.group.add(plane);
+            anchor.group.add(GSplane);
+            anchor.onTargetFound = () => {
+                video.muted = false;
+                video.play();
+                GSvideo.play();
+            }
+            anchor.onTargetLost = () => {
+                video.pause();
+                GSvideo.pause();
+            }
+            GSvideo.addEventListener('play', () => {
+                GSvideo.currentTime = 2;
+            });
+
+        }
+
+        await mindarThree.start();
+        renderer.setAnimationLoop(() => {
+            renderer.render(scene, camera);
+        });
+    }
+
+    function hideDiv() {
+        var div = document.getElementById("welcome");
+        div.classList.toggle('hidden');
+    }
+
+    //start button to overcome IOS browser
+    const startButton = document.getElementById('startbutton');
+    startButton.addEventListener('click', () => {
+        init();
+        hideDiv();
+        startButton.style.display = "none"; //button will disappear upon click
+    })
+
+});
+
+
+//helper functions
 function createVideoPlane(video, width, height) {
     const texture = new THREE.VideoTexture(video);
     const geometry = new THREE.PlaneGeometry(width, height);
@@ -47,87 +129,3 @@ const loadVideos = async(associatedId) => {
     }
     return loadedVideos;
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    let loadedTriggerVids, loadedChromaVids = null;
-
-
-    const init = async() => {
-        // pre-load videos by getting the DOM elements
-        loadedTriggerVids = await loadVideos(".trigger-vid");
-        loadedChromaVids = await loadVideos(".chroma-vid");
-
-    }
-
-    const start = async() => {
-        const mindarThree = new window.MINDAR.IMAGE.MindARThree({
-            container: document.querySelector("#my-ar-container"),
-            imageTargetSrc: 'targets.mind',
-            uiLoading: "#loading",
-        });
-        const { renderer, scene, camera } = mindarThree;
-
-        const anchors = new Array();
-
-        for (var i = 0; i < loadedTriggerVids.length; i++) {
-            console.log('hello', loadedTriggerVids[i].id);
-
-            const plane = createVideoPlane(loadedTriggerVids[i], 1, 9 / 16);
-            const GSplane = createGSplane(loadedChromaVids[i], 1, 3 / 4);
-            anchors.push(mindarThree.addAnchor(i));
-            console.log(anchors[i]);
-            anchors[i].group.add(plane);
-            anchors[i].group.add(GSplane);
-            console.log('configured!', i);
-        }
-
-        for (var i = 0; i < anchors.length; i++) {
-            const video = loadedTriggerVids[i];
-            const GSvideo = loadedChromaVids[i];
-            const anchor = anchors[i];
-            anchor.onTargetFound = () => {
-                video.muted = false;
-                video.play();
-                GSvideo.play();
-            }
-            anchor.onTargetLost = () => {
-                video.pause();
-                GSvideo.pause();
-            }
-
-            // //to skip the black screen for the chroma overlays
-            GSvideo.addEventListener('play', () => {
-                GSvideo.currentTime = 2;
-            });
-        }
-
-        await mindarThree.start();
-        renderer.setAnimationLoop(() => {
-            renderer.render(scene, camera);
-        });
-    }
-
-    function hideDiv() {
-        var div = document.getElementById("welcome");
-        div.classList.toggle('hidden');
-    }
-
-    //start button to overcome IOS browser
-    const startButton = document.getElementById('startbutton');
-    startButton.addEventListener('click', () => {
-        init();
-        hideDiv();
-        startButton.style.display = "none"; //button will disappear upon click
-    })
-
-    var eventHandler = function(e) {
-        start();
-        // remove this handler
-        document.body.removeEventListener('click', eventHandler, false);
-
-        console.log("Added! Now removing this listener");
-    }
-
-    document.body.addEventListener("click", eventHandler);
-
-});
