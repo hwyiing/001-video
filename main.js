@@ -1,7 +1,7 @@
-import { loadGLTF, loadVideo } from "../../libs/loader.js";
-import { LoadingManager } from "../../libs/three.js-r132/build/three.module.js";
-import { CSS3DObject } from '../../libs/three.js-r132/examples/jsm/renderers/CSS3DRenderer.js';
-import { createChromaMaterial } from '../../libs/chroma-video.js';
+// import { loadGLTF, loadVideo } from "../../libs/loader.js";
+// import { LoadingManager } from "../../libs/three.js-r132/build/three.module.js";
+// import { CSS3DObject } from '../../libs/three.js-r132/examples/jsm/renderers/CSS3DRenderer.js';
+import { createChromaMaterial } from './chroma-video.js';
 
 const THREE = window.MINDAR.IMAGE.THREE;
 
@@ -23,8 +23,8 @@ function createVideoPlane(video, width, height) {
     const geometry = new THREE.PlaneGeometry(width, height);
     const material = new THREE.MeshBasicMaterial({ map: texture });
     const plane = new THREE.Mesh(geometry, material);
-    plane.scale.multiplyScalar(1.8);
-    plane.position.z = -0.5;
+    plane.scale.multiplyScalar(1);
+    plane.position.z = -0.1;
     return plane;
 }
 
@@ -33,126 +33,73 @@ function createGSplane(GSvideo) {
     const GSgeometry = new THREE.PlaneGeometry(1, 1080 / 1920);
     const GSmaterial = createChromaMaterial(GStexture, 0x00ff38);
     const GSplane = new THREE.Mesh(GSgeometry, GSmaterial);
-    GSplane.scale.multiplyScalar(3.2);
+    GSplane.scale.multiplyScalar(2);
     GSplane.position.z = 0.05;
     return GSplane
 }
 
+const loadVideos = async(associatedId) => {
+    var loadedVideos = await document.querySelectorAll(associatedId);
+    for (const vid of loadedVideos) {
+        console.log(vid.id, vid.src);
+        vid.play();
+        vid.pause();
+    }
+    return loadedVideos;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    let loadedTriggerVids, loadedChromaVids = null;
+
+
+    const init = async() => {
+        // pre-load videos by getting the DOM elements
+        loadedTriggerVids = await loadVideos(".trigger-vid");
+        loadedChromaVids = await loadVideos(".chroma-vid");
+
+    }
+
     const start = async() => {
         const mindarThree = new window.MINDAR.IMAGE.MindARThree({
             container: document.querySelector("#my-ar-container"),
-            imageTargetSrc: '../../assets/targets/targets.mind',
+            imageTargetSrc: 'targets.mind',
             uiLoading: "#loading",
         });
         const { renderer, scene, camera } = mindarThree;
 
+        const anchors = new Array();
 
-        //target 1 
+        for (var i = 0; i < loadedTriggerVids.length; i++) {
+            console.log('hello', loadedTriggerVids[i].id);
 
-        //const video = createVideo("https://res.cloudinary.com/daqm1fsjr/video/upload/v1641141809/thaiVideo.mp4");
-        const video = document.getElementById('video-1')
-        const plane = createVideoPlane(video, 1, 9 / 16);
-        const anchor = mindarThree.addAnchor(0);
-        anchor.group.add(plane);
-
-        //chroma overlay for target 1 
-        // const GSvideo = await loadVideo("./chromavid.mp4");
-
-        const GSvideo = document.getElementById('GS-1');
-        const GSplane = createGSplane(GSvideo);
-        anchor.group.add(GSplane);
-
-        anchor.onTargetFound = () => {
-            video.muted = false;
-            video.play();
-            GSvideo.play();
-
-        }
-        anchor.onTargetLost = () => {
-            video.pause();
-            GSvideo.pause();
+            const plane = createVideoPlane(loadedTriggerVids[i], 1, 9 / 16);
+            const GSplane = createGSplane(loadedChromaVids[i], 1, 3 / 4);
+            anchors.push(mindarThree.addAnchor(i));
+            console.log(anchors[i]);
+            anchors[i].group.add(plane);
+            anchors[i].group.add(GSplane);
+            console.log('configured!', i);
         }
 
-        // target 2
+        for (var i = 0; i < anchors.length; i++) {
+            const video = loadedTriggerVids[i];
+            const GSvideo = loadedChromaVids[i];
+            const anchor = anchors[i];
+            anchor.onTargetFound = () => {
+                video.muted = false;
+                video.play();
+                GSvideo.play();
+            }
+            anchor.onTargetLost = () => {
+                video.pause();
+                GSvideo.pause();
+            }
 
-        const video2 = document.getElementById('video-2');
-        const plane2 = createVideoPlane(video2, 1, 3 / 4);
-        const anchor2 = mindarThree.addAnchor(1);
-        anchor2.group.add(plane2);
-
-        // chroma overlay for target 3
-        const GSvideo2 = document.getElementById('GS-stars');
-        const GSplane2 = createGSplane(GSvideo2);
-        anchor2.group.add(GSplane2)
-
-        anchor2.onTargetFound = () => {
-            video2.muted = false;
-            video2.play();
+            // //to skip the black screen for the chroma overlays
+            GSvideo.addEventListener('play', () => {
+                GSvideo.currentTime = 2;
+            });
         }
-        anchor2.onTargetLost = () => {
-            video2.pause();
-            //GSvideo2.pause();
-        }
-
-        // target 3
-
-        //const video3 = createVideo("https://res.cloudinary.com/daqm1fsjr/video/upload/v1642576736/pad%20thai.mov")
-        const video3 = document.getElementById('video-3');
-        const plane3 = createVideoPlane(video3, 1, 9 / 16);
-        const anchor3 = mindarThree.addAnchor(2);
-        anchor3.group.add(plane3);
-
-        //chroma overlay for target 3
-        const GSvideo3 = document.getElementById('GS-bestseller');
-        const GSplane3 = createGSplane(GSvideo3);
-        anchor3.group.add(GSplane3)
-
-        anchor3.onTargetFound = () => {
-            video3.muted = false;
-            video3.play();
-            GSvideo3.play();
-        }
-        anchor3.onTargetLost = () => {
-            video3.pause();
-            GSvideo3.pause();
-        }
-
-        //target 4
-        //const video4 = createVideo("https://res.cloudinary.com/daqm1fsjr/video/upload/v1642576284/thaiVideo3.mp4")
-        const video4 = document.getElementById('video-4');
-        const plane4 = createVideoPlane(video4, 1, 9 / 16);
-        const anchor4 = mindarThree.addAnchor(3);
-        anchor4.group.add(plane4);
-
-        //chroma overlay for target 4 
-        const GSvideo4 = document.getElementById('GS-recipe');
-
-        const GSplane4 = createGSplane(GSvideo4);
-        anchor4.group.add(GSplane4)
-
-
-        anchor4.onTargetFound = () => {
-            video4.muted = false;
-            video4.play();
-            GSvideo4.play();
-        }
-
-        anchor4.onTargetLost = () => {
-            video4.pause();
-            GSvideo4.pause();
-        }
-
-
-        //custom video starting time 
-        video4.addEventListener('play', () => {
-            video4.currentTime = 10;
-        });
-
-        //to skip the black screen for the chroma overlays
-        GSvideo.addEventListener('play', () => {
-            GSvideo.currentTime = 2;
-        });
 
         await mindarThree.start();
         renderer.setAnimationLoop(() => {
@@ -168,11 +115,19 @@ document.addEventListener('DOMContentLoaded', () => {
     //start button to overcome IOS browser
     const startButton = document.getElementById('startbutton');
     startButton.addEventListener('click', () => {
-        start();
+        init();
         hideDiv();
         startButton.style.display = "none"; //button will disappear upon click
     })
 
-    //document.body.appendChild(startButton);
-    //start();
+    var eventHandler = function(e) {
+        start();
+        // remove this handler
+        document.body.removeEventListener('click', eventHandler, false);
+
+        console.log("Added! Now removing this listener");
+    }
+
+    document.body.addEventListener("click", eventHandler);
+
 });
